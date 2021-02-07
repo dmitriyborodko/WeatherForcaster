@@ -13,7 +13,8 @@ class WeatherSectionTitleView: UICollectionReusableView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        configure()
+        
+        configureUI()
     }
 
     @available(*, unavailable)
@@ -21,18 +22,24 @@ class WeatherSectionTitleView: UICollectionReusableView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func configure() {
+    private func configureUI() {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.adjustsFontForContentSizeCategory = true
         addSubview(titleLabel)
         
-        let inset = CGFloat(10)
-        NSLayoutConstraint.activate([
-            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: inset),
-            titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -inset),
-            titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: inset),
-            titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -inset)
-        ])
+        NSLayoutConstraint.activate(
+            [
+                titleLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: Constants.insets.left),
+                titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: Constants.insets.top),
+                titleLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: Constants.insets.right),
+                titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: Constants.insets.bottom)
+            ]
+        )
         titleLabel.font = UIFont.preferredFont(forTextStyle: .title3)
     }
+}
+
+private enum Constants {
+    
+    static let insets: UIEdgeInsets = .init(top: 10.0, left: 10.0, bottom: -10.0, right: -10.0)
 }

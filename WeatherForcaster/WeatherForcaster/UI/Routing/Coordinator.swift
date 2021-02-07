@@ -5,9 +5,14 @@ class Coordinator {
     var rootVC: UIViewController? { weatherNavigationController }
 
     private var weatherNavigationController: UINavigationController?
+    private weak var weatherVC: WeatherVC?
 
     init() {
         configureUI()
+    }
+
+    func reloadWeather() {
+        weatherVC?.reloadData()
     }
 
     private func configureUI() {
@@ -20,6 +25,7 @@ class Coordinator {
             alertController.addAction(action)
             weatherVC.present(alertController, animated: true)
         }
+        self.weatherVC = weatherVC
 
         weatherNavigationController = UINavigationController()
         weatherNavigationController?.setViewControllers([weatherVC], animated: false)

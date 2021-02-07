@@ -15,7 +15,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.makeKeyAndVisible()
     }
 
-    func sceneDidBecomeActive(_ scene: UIScene) {
-        // TODO: reload weather
+    func sceneWillEnterForeground(_ scene: UIScene) {
+        coordinator.reloadWeather()
     }
 }
