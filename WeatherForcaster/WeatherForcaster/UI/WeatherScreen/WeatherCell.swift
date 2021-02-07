@@ -60,7 +60,7 @@ class WeatherCell: UICollectionViewCell {
             [
                 timeLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: Constants.contentViewInnerInsets.left),
                 timeLabel.topAnchor.constraint(equalTo: topAnchor, constant: Constants.contentViewInnerInsets.top),
-                timeLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: Constants.contentViewInnerInsets.right)
+                timeLabel.heightAnchor.constraint(equalToConstant: Constants.iconImageViewSize.height)
             ]
         )
     }
@@ -75,7 +75,9 @@ class WeatherCell: UICollectionViewCell {
             [
                 temperatureLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: Constants.contentViewInnerInsets.left),
                 temperatureLabel.topAnchor
-                    .constraint(equalTo: timeLabel.bottomAnchor, constant: Constants.timeLabelBottomOffset)
+                    .constraint(equalTo: timeLabel.bottomAnchor, constant: Constants.timeLabelBottomOffset),
+                temperatureLabel.rightAnchor
+                    .constraint(equalTo: rightAnchor, constant: Constants.contentViewInnerInsets.right)
             ]
         )
     }
@@ -89,7 +91,7 @@ class WeatherCell: UICollectionViewCell {
                 iconImageView.topAnchor
                     .constraint(equalTo: topAnchor, constant: Constants.contentViewInnerInsets.top),
                 iconImageView.leftAnchor
-                    .constraint(equalTo: temperatureLabel.rightAnchor, constant: Constants.iconImageViewLeftOffset),
+                    .constraint(equalTo: timeLabel.rightAnchor, constant: Constants.iconImageViewLeftOffset),
                 iconImageView.rightAnchor
                     .constraint(equalTo: rightAnchor, constant: Constants.contentViewInnerInsets.right),
                 iconImageView.widthAnchor.constraint(equalToConstant: Constants.iconImageViewSize.width),
@@ -102,10 +104,10 @@ class WeatherCell: UICollectionViewCell {
 private enum Constants {
 
     static let contentViewCornerRadius: CGFloat = 32.0
-    static let contentViewInnerInsets: UIEdgeInsets = .init(top: 8.0, left: 8.0, bottom: -8.0, right: -8.0)
+    static let contentViewInnerInsets: UIEdgeInsets = .init(top: 8.0, left: 16.0, bottom: -8.0, right: -16.0)
     static let timeLabelBottomOffset: CGFloat = 8.0
 
-    static let iconImageViewSize: CGSize = .init(width: 66.0, height: 66.0)
+    static let iconImageViewSize: CGSize = .init(width: 60.0, height: 60.0)
     static let iconImageViewLeftOffset: CGFloat = 8.0
 
     static let temperatureFont: UIFont = UIFont.systemFont(ofSize: 50.0, weight: .thin)

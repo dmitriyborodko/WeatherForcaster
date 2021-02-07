@@ -167,9 +167,18 @@ class WeatherVC: UIViewController {
         }
     }
 
+    private func reloadCollectionViewData() {
+        UIView.transition(
+            with: collectionView,
+            duration: 0.2,
+            options: [.transitionCrossDissolve, .curveEaseInOut],
+            animations: { self.collectionView.reloadData() }
+        )
+    }
+
     private func applyEmptyDataSource() {
         dataSource = nil
-        collectionView.reloadData()
+        reloadCollectionViewData()
     }
 
     private func applyDataSource(for viewModel: WeatherVM) {
@@ -202,7 +211,7 @@ class WeatherVC: UIViewController {
         }
 
         dataSource?.apply(currentSnapshot, animatingDifferences: false) {
-            self.collectionView.reloadData()
+            self.reloadCollectionViewData()
         }
     }
 
@@ -221,15 +230,18 @@ class WeatherVC: UIViewController {
     private func loadData() {
         applyState(.loading)
 
+        let selectedAssetType = self.selectedAssetType
         switch selectedAssetType {
         case .actual:
             weatherService.fetchWeather(with: Constants.defaultCityName) { [weak self] result in
-                self?.handleWeatherForecastResult(result)
+                guard let self = self, selectedAssetType == self.selectedAssetType else { return }
+                self.handleWeatherForecastResult(result)
             }
 
         case .stored:
             weatherService.fetchStoredWeather() { [weak self] result in
-                self?.handleWeatherForecastResult(result)
+                guard let self = self, selectedAssetType == self.selectedAssetType else { return }
+                self.handleWeatherForecastResult(result)
             }
         }
     }
