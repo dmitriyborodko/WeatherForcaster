@@ -82,15 +82,3 @@ private enum Constants {
     static let weatherURLConponents = URLComponents(string: "https://api.openweathermap.org/data/2.5/forecast")!
     static let appKey: String = "2ffedf5f3cc7cea9cbcc23dcefed4782"
 }
-
-private extension Locale {
-
-    enum MeasurementSystemType: String {
-        case imperial = "imperial"
-        case metric = "metric"
-    }
-
-    var measurementSystem: MeasurementSystemType {
-        return usesMetricSystem ? .metric : .imperial
-    }
-}

@@ -2,16 +2,18 @@ import UIKit
 
 class WeatherVC: UIViewController {
 
+    var showErrorAlertEvent: ((String) -> Void)?
+
     private enum State {
         case loading
-        case presenting(WeatherViewModel)
+        case presenting(WeatherVM)
         case error(Error)
     }
 
     private lazy var titleSegmentedControl: UISegmentedControl = self.makeTitleSegmentedControl()
-    private lazy var tableView: UITableView = makeTableView()
+    private lazy var collectionView: UICollectionView = makeCollectionView()
 
-    private var state: State = .loading
+    private var dataSource: UICollectionViewDiffableDataSource<WeatherVM.Section, WeatherVM.Item>?
     private var selectedAssetType: NavigationState {
         NavigationState(rawValue: titleSegmentedControl.selectedSegmentIndex) ?? .default
     }
@@ -38,7 +40,7 @@ class WeatherVC: UIViewController {
     }
 
     override func loadView() {
-        view = tableView
+        view = collectionView
 
         configureUI()
     }
@@ -49,11 +51,17 @@ class WeatherVC: UIViewController {
         loadData()
     }
 
-    @objc private func onTitleSegmentedControlValueChanged() {
-        reloadTableView()
+    func reloadData() {
+        guard isViewLoaded else { return }
+
+        loadData()
     }
 
-    @objc private func onRefreshControlValueChange() {
+    @objc private func onTitleSegmentedControlValueChanged() {
+        loadData()
+    }
+
+    @objc private func onRefreshControlValueChanged() {
         loadData()
     }
 
@@ -70,16 +78,15 @@ class WeatherVC: UIViewController {
         return segmentedControl
     }
 
-    private func makeTableView() -> UITableView {
-        let tableView = UITableView(frame: .zero, style: .plain)
-        tableView.separatorStyle = .none
-        tableView.dataSource = self
+    private func makeCollectionView() -> UICollectionView {
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
+        collectionView.alwaysBounceVertical = true
 
         let refreshControl = UIRefreshControl()
-        refreshControl.addTarget(self, action: #selector(onRefreshControlValueChange), for: .valueChanged)
-        tableView.refreshControl = refreshControl
+        refreshControl.addTarget(self, action: #selector(onRefreshControlValueChanged), for: .valueChanged)
+        collectionView.refreshControl = refreshControl
 
-        return tableView
+        return collectionView
     }
 
     private func configureUI() {
@@ -87,86 +94,134 @@ class WeatherVC: UIViewController {
         navigationItem.titleView = titleSegmentedControl
     }
 
-    private func reloadTableView() {
-        switch self.state {
-        case .loading:
-            self.tableView.refreshControl?.beginRefreshing()
+    private func createLayout() -> UICollectionViewLayout {
+        let sectionProvider = { (
+            sectionIndex: Int,
+            layoutEnvironment: NSCollectionLayoutEnvironment
+        ) -> NSCollectionLayoutSection? in
+            let item = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .fractionalHeight(1.0)
+                )
+            )
+            let groupSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(
+                    CGFloat(layoutEnvironment.container.effectiveContentSize.width > 500 ? 0.425 : 0.65)
+                ),
+                heightDimension: .absolute(150)
+            )
 
-        case .presenting, .error:
-            self.tableView.refreshControl?.endRefreshing()
+            let section = NSCollectionLayoutSection(
+                group: NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+            )
+
+            section.orthogonalScrollingBehavior = .continuous
+            section.interGroupSpacing = 20
+            section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
+
+            let titleSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1.0),
+                heightDimension: .estimated(44)
+            )
+            let titleSupplementary = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: titleSize,
+                elementKind: WeatherSectionTitleView.sectionHeaderElementKind,
+                alignment: .top
+            )
+            section.boundarySupplementaryItems = [titleSupplementary]
+
+            return section
         }
 
-        self.tableView.reloadData()
+        let config = UICollectionViewCompositionalLayoutConfiguration()
+        config.interSectionSpacing = 20
+
+        return UICollectionViewCompositionalLayout(sectionProvider: sectionProvider, configuration: config)
+    }
+
+    private func configureWeatherCell(_ cell: WeatherCell, indexPath: IndexPath, viewModel: WeatherVM.Item) {
+        cell.time = viewModel.time
+        cell.temperature = viewModel.temperature
+        cell.icon = #imageLiteral(resourceName: "camera")
+        imageService.fetchImage(with: viewModel.iconURL) { [weak cell] result in
+            guard let cell = cell, case .success(let image) = result else { return }
+            cell.icon = image
+        }
+    }
+
+    private func applyState(_ state: State) {
+        switch state {
+        case .loading:
+            collectionView.refreshControl?.beginRefreshing()
+            applyEmptyDataSource()
+
+        case .presenting(let viewModel):
+            collectionView.refreshControl?.endRefreshing()
+            applyDataSource(for: viewModel)
+
+        case .error(let error):
+            collectionView.refreshControl?.endRefreshing()
+            applyEmptyDataSource()
+            showErrorAlertEvent?(error.localizedDescription)
+        }
+    }
+
+    private func applyEmptyDataSource() {
+        dataSource = nil
+        collectionView.reloadData()
+    }
+
+    private func applyDataSource(for viewModel: WeatherVM) {
+        let cellRegistration = UICollectionView.CellRegistration<WeatherCell, WeatherVM.Item> {
+            self.configureWeatherCell($0, indexPath: $1, viewModel: $2)
+        }
+
+        dataSource = UICollectionViewDiffableDataSource<WeatherVM.Section, WeatherVM.Item>(
+            collectionView: collectionView
+        ) { collectionView, indexPath, item -> UICollectionViewCell? in
+            return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
+        }
+
+        let supplementaryRegistration = UICollectionView.SupplementaryRegistration<WeatherSectionTitleView>(
+            elementKind: WeatherSectionTitleView.sectionHeaderElementKind
+        ) { supplementaryView, string, indexPath in
+            supplementaryView.title = viewModel.sections[indexPath.section].title
+        }
+
+        dataSource?.supplementaryViewProvider = { view, kind, index in
+            return self.collectionView.dequeueConfiguredReusableSupplementary(
+                using: supplementaryRegistration, for: index
+            )
+        }
+
+        var currentSnapshot = NSDiffableDataSourceSnapshot<WeatherVM.Section, WeatherVM.Item>()
+        viewModel.sections.forEach { section in
+            currentSnapshot.appendSections([section])
+            currentSnapshot.appendItems(section.items)
+        }
+
+        dataSource?.apply(currentSnapshot, animatingDifferences: false) {
+            self.collectionView.reloadData()
+        }
     }
 
     private func loadData() {
-        self.state = .loading
-        self.reloadTableView()
+        applyState(.loading)
 
         weatherService.fetchWeather(with: Constants.defaultCityName) { [weak self] result in
             guard let self = self else { return }
 
             switch result {
             case .success(let weatherForecast):
-                self.state = .presenting(
-                    WeatherViewModel(weatherForecast: weatherForecast, formatter: self.weatherDateFormatter)
+                self.applyState(
+                    .presenting(WeatherVM(weatherForecast: weatherForecast, formatter: self.weatherDateFormatter))
                 )
-                self.reloadTableView()
 
             case .failure(let error):
-                self.state = .error(error)
-                self.reloadTableView()
+                self.applyState(.error(error))
             }
         }
-    }
-}
-
-extension WeatherVC: UITableViewDataSource {
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch state {
-        case .loading:
-            return 0
-
-        case .presenting:
-            return 1
-
-        case .error:
-            return 1
-        }
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch state {
-        case .loading:
-            return UITableViewCell()
-
-        case .presenting(let viewModel):
-            guard let item = viewModel.sections[safe: indexPath.section]?.items[safe: indexPath.row] else {
-                return UITableViewCell()
-            }
-
-            return dequeueWeatherCell(in: tableView, viewModel: item)
-
-        case .error(let error):
-            let cell: ErrorCell = tableView.registerAndDequeueReusableCell()
-            cell.title = "\(error.localizedDescription)"
-
-            return cell
-        }
-    }
-
-    private func dequeueWeatherCell(in tableView: UITableView, viewModel: WeatherItemViewModel) -> UITableViewCell {
-        let cell: WeatherCell = tableView.registerAndDequeueReusableCell()
-        cell.temperature = viewModel.temperature
-
-        cell.icon = #imageLiteral(resourceName: "camera")
-        imageService.fetchImage(with: viewModel.iconURL) { [weak cell] result in
-            guard case .success(let image) = result else { return }
-            cell?.icon = image
-        }
-
-        return cell
     }
 }
 

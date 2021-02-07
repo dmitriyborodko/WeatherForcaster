@@ -1,6 +1,6 @@
 import UIKit
 
-class WeatherCell: UITableViewCell, Reusable {
+class WeatherCell: UICollectionViewCell {
 
     var temperature: String? {
         get { temperatureLabel.text }
@@ -12,16 +12,20 @@ class WeatherCell: UITableViewCell, Reusable {
         set { iconImageView.image = newValue }
     }
 
-    private let overallView: UIView = .init()
+    var time: String? {
+        get { timeLabel.text }
+        set { timeLabel.text = newValue }
+    }
+
+    private let timeLabel: UILabel = .init()
     private let temperatureLabel: UILabel = .init()
     private let iconImageView: UIImageView = .init()
 
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
+    override init(frame: CGRect) {
+        super.init(frame: frame)
 
         backgroundColor = .clear
-
-        configureOverallView()
+        configureUI()
     }
 
     @available(*, unavailable)
@@ -36,67 +40,58 @@ class WeatherCell: UITableViewCell, Reusable {
         self.icon = #imageLiteral(resourceName: "camera")
     }
 
-    func configureOverallView() {
-        overallView.layer.cornerRadius = Constants.overallViewCornerRadius
-        overallView.layer.cornerCurve = .continuous
-        overallView.backgroundColor = .lightGray
-        contentView.addSubview(overallView)
-        overallView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate(
-            [
-                overallView.leftAnchor.constraint(
-                    greaterThanOrEqualTo: contentView.leftAnchor,
-                    constant: Constants.contentEdgeInsets.left
-                ),
-                overallView.topAnchor.constraint(
-                    equalTo: topAnchor,
-                    constant: Constants.overallViewInnerInsets.top
-                ),
-                overallView.rightAnchor.constraint(
-                    greaterThanOrEqualTo: contentView.rightAnchor,
-                    constant: Constants.contentEdgeInsets.right
-                ),
-                overallView.bottomAnchor.constraint(
-                    equalTo: bottomAnchor,
-                    constant: Constants.overallViewInnerInsets.bottom
-                ),
-                overallView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor)
-            ]
-        )
+    private func configureUI() {
+        contentView.layer.cornerRadius = Constants.contentViewCornerRadius
+        contentView.layer.cornerCurve = .continuous
+        contentView.backgroundColor = .lightGray
 
+        configureTimeLabel()
         configureTemperatureView()
         configureIconImageView()
     }
 
-    func configureTemperatureView() {
-        temperatureLabel.font = Constants.temperatureFont
-        temperatureLabel.textColor = .darkText
-        overallView.addSubview(temperatureLabel)
+    private func configureTimeLabel() {
+        timeLabel.font = Constants.temperatureFont
+        timeLabel.textColor = .darkText
+        timeLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        temperatureLabel.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(timeLabel)
         NSLayoutConstraint.activate(
             [
-                temperatureLabel.leftAnchor
-                    .constraint(equalTo: leftAnchor, constant: Constants.overallViewInnerInsets.left),
-                temperatureLabel.topAnchor
-                    .constraint(equalTo: topAnchor, constant: Constants.overallViewInnerInsets.top),
-                temperatureLabel.bottomAnchor
-                    .constraint(equalTo: bottomAnchor, constant: Constants.overallViewInnerInsets.bottom),
+                timeLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: Constants.contentViewInnerInsets.left),
+                timeLabel.topAnchor.constraint(equalTo: topAnchor, constant: Constants.contentViewInnerInsets.top),
+                timeLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: Constants.contentViewInnerInsets.right)
             ]
         )
     }
 
-    func configureIconImageView() {
-        overallView.addSubview(iconImageView)
+    private func configureTemperatureView() {
+        temperatureLabel.font = Constants.temperatureFont
+        temperatureLabel.textColor = .darkText
+        temperatureLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        contentView.addSubview(temperatureLabel)
+        NSLayoutConstraint.activate(
+            [
+                temperatureLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: Constants.contentViewInnerInsets.left),
+                temperatureLabel.topAnchor
+                    .constraint(equalTo: timeLabel.bottomAnchor, constant: Constants.timeLabelBottomOffset)
+            ]
+        )
+    }
+
+    private func configureIconImageView() {
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
+
+        contentView.addSubview(iconImageView)
         NSLayoutConstraint.activate(
             [
                 iconImageView.topAnchor
-                    .constraint(equalTo: topAnchor, constant: Constants.overallViewInnerInsets.top),
+                    .constraint(equalTo: topAnchor, constant: Constants.contentViewInnerInsets.top),
                 iconImageView.leftAnchor
                     .constraint(equalTo: temperatureLabel.rightAnchor, constant: Constants.iconImageViewLeftOffset),
                 iconImageView.rightAnchor
-                    .constraint(equalTo: rightAnchor, constant: Constants.overallViewInnerInsets.right),
+                    .constraint(equalTo: rightAnchor, constant: Constants.contentViewInnerInsets.right),
                 iconImageView.widthAnchor.constraint(equalToConstant: Constants.iconImageViewSize.width),
                 iconImageView.heightAnchor.constraint(equalToConstant: Constants.iconImageViewSize.height)
             ]
@@ -106,10 +101,9 @@ class WeatherCell: UITableViewCell, Reusable {
 
 private enum Constants {
 
-    static let contentEdgeInsets: UIEdgeInsets = .init(top: 32.0, left: 16.0, bottom: 32.0, right: 16.0)
-
-    static let overallViewCornerRadius: CGFloat = 32.0
-    static let overallViewInnerInsets: UIEdgeInsets = .init(top: 16.0, left: 32.0, bottom: 16.0, right: -32.0)
+    static let contentViewCornerRadius: CGFloat = 32.0
+    static let contentViewInnerInsets: UIEdgeInsets = .init(top: 8.0, left: 8.0, bottom: -8.0, right: -8.0)
+    static let timeLabelBottomOffset: CGFloat = 8.0
 
     static let iconImageViewSize: CGSize = .init(width: 66.0, height: 66.0)
     static let iconImageViewLeftOffset: CGFloat = 8.0
