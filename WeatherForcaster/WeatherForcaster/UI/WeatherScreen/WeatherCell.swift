@@ -43,7 +43,7 @@ class WeatherCell: UICollectionViewCell {
     private func configureUI() {
         contentView.layer.cornerRadius = Constants.contentViewCornerRadius
         contentView.layer.cornerCurve = .continuous
-        contentView.backgroundColor = .lightGray
+        contentView.backgroundColor = .systemTeal
 
         configureTimeLabel()
         configureTemperatureView()

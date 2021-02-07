@@ -30,6 +30,7 @@
 		0B39557A25CA938900976A6A /* ImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B39557925CA938900976A6A /* ImageService.swift */; };
 		0BCFF2FF25D04ADE00EF715B /* WeatherSectionTitleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BCFF2FE25D04ADE00EF715B /* WeatherSectionTitleView.swift */; };
 		0BCFF31525D08C7F00EF715B /* Locale+MeasurementSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BCFF31425D08C7F00EF715B /* Locale+MeasurementSystem.swift */; };
+		0BCFF31A25D094EC00EF715B /* moscow in Resources */ = {isa = PBXBuildFile; fileRef = 0BCFF31925D094EC00EF715B /* moscow */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +80,7 @@
 		0B39557925CA938900976A6A /* ImageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageService.swift; sourceTree = "<group>"; };
 		0BCFF2FE25D04ADE00EF715B /* WeatherSectionTitleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSectionTitleView.swift; sourceTree = "<group>"; };
 		0BCFF31425D08C7F00EF715B /* Locale+MeasurementSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Locale+MeasurementSystem.swift"; sourceTree = "<group>"; };
+		0BCFF31925D094EC00EF715B /* moscow */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = moscow; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -171,6 +173,7 @@
 		0B39553D25CA894800976A6A /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				0BCFF31925D094EC00EF715B /* moscow */,
 				0B19DC3725BF6A2200A12A60 /* Assets.xcassets */,
 				0B19DC3925BF6A2200A12A60 /* LaunchScreen.storyboard */,
 			);
@@ -332,6 +335,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0BCFF31A25D094EC00EF715B /* moscow in Resources */,
 				0B19DC3B25BF6A2200A12A60 /* LaunchScreen.storyboard in Resources */,
 				0B19DC3825BF6A2200A12A60 /* Assets.xcassets in Resources */,
 			);

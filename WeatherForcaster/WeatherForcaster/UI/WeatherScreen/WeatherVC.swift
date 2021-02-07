@@ -206,20 +206,30 @@ class WeatherVC: UIViewController {
         }
     }
 
+    private func handleWeatherForecastResult(_ result: Result<WeatherForecast, WeatherServiceError>) {
+        switch result {
+        case .success(let weatherForecast):
+            applyState(
+                .presenting(WeatherVM(weatherForecast: weatherForecast, formatter: weatherDateFormatter))
+            )
+
+        case .failure(let error):
+            applyState(.error(error))
+        }
+    }
+
     private func loadData() {
         applyState(.loading)
 
-        weatherService.fetchWeather(with: Constants.defaultCityName) { [weak self] result in
-            guard let self = self else { return }
+        switch selectedAssetType {
+        case .actual:
+            weatherService.fetchWeather(with: Constants.defaultCityName) { [weak self] result in
+                self?.handleWeatherForecastResult(result)
+            }
 
-            switch result {
-            case .success(let weatherForecast):
-                self.applyState(
-                    .presenting(WeatherVM(weatherForecast: weatherForecast, formatter: self.weatherDateFormatter))
-                )
-
-            case .failure(let error):
-                self.applyState(.error(error))
+        case .stored:
+            weatherService.fetchStoredWeather() { [weak self] result in
+                self?.handleWeatherForecastResult(result)
             }
         }
     }
@@ -235,10 +245,10 @@ private enum NavigationState: Int, CaseIterable {
     var title: String {
         switch self {
         case .actual:
-            return "Actual"
+            return "München, now"
 
         case .stored:
-            return "Stored"
+            return "Moscow, 8 Feb"
         }
     }
 }
