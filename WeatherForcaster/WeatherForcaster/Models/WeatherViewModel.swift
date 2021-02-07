@@ -21,7 +21,7 @@ struct WeatherItemViewModel {
 
 extension WeatherViewModel {
 
-    private static func mapWeatheItems(items: [WeatherItem], formatter: WeatherDateFormatter) -> [WeatherSectionViewModel] {
+    private static func mapWeatherItems(items: [WeatherItem], formatter: WeatherDateFormatter) -> [WeatherSectionViewModel] {
         guard !items.isEmpty else { return [] }
 
         var sections = [WeatherSectionViewModel]()
@@ -51,6 +51,6 @@ extension WeatherViewModel {
 
     init(weatherForecast: WeatherForecast, formatter: WeatherDateFormatter) {
         self.locationName = weatherForecast.location
-        self.sections = Self.mapWeatheItems(items: weatherForecast.items, formatter: formatter)
+        self.sections = Self.mapWeatherItems(items: weatherForecast.items, formatter: formatter)
     }
 }
